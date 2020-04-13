@@ -1,31 +1,30 @@
-#Task 1
-#Creating tree directory
-```
+//Task 1
+//Creating tree directory
+
 mkdir -p a/{b/{d/{i/m/z,j/l/z},e/h/l/z},c/{f/h/l/z,g/k/l/z}}
-```
+tree a
 
 
 
-#Task 2
-#Creating a new user and giving only date permission to it
-```
-sudo useradd -m riya
-sudo passwd riya
-sudo chsh -s /bin/rbash riya
-sudo mkdir /home/riya/bin
-sudo chmod 755 /home/riya/bin
-sudo echo "PATH=$HOME/bin" >> /home/riya/.bashrc
-sudo echo "export PATH" >> /home/riya/.bashrc
-sudo ln -s /bin/date /home/riya/bin/
-sudo chattr +i /home/riya/.bashrc
+//Task 2
+//Creating a new user and giving only date permission to it
 
-sudo chmod -x /usr/bin/date
-```
+date
+which date
+chmod a-x /usr/bin/date
+ls -l /usr/bin/date
+useradd -s /usr/bin/date riya
+setfacl -m u:riya:rwx /usr/bin/date
+su - riya
+setfacl -m u:root:--- /usr/bin/date
+chmod -x /usr/bin/date 
+date
 
 
-#Task 3
-#Creating 2 users and copying data between them without using sudo
-```
+
+//Task 3
+//Creating 2 users and copying data between them without using sudo
+
 sudo apt install openssh-server -y
 sudo ufw allow ssh
 sudo useradd -m A
@@ -45,22 +44,23 @@ scp fileA B@localhost:/home/B/
 scp -r folderA B@localhost:/home/B/
 exit
 ls /home/B/
-```
 
 
 
-#Task 4
-#Run loop for 10 seconds and save ouput of cal command in file and also count number of iterations
-#Save and run the python script
-```
-import time
-import os
 
-millis = int(round(time.time() * 1000))
-count = 0
-while int(round(time.time() * 1000))<=millis+10000:
-	count += 1
-	os.system("cal >> /tmp/a.txt")
-os.system("echo 'Count: {}' >> /tmp/a.txt".format(count))
-os.system("cat /tmp/a.txt")
-```
+//Task 4
+//Run loop for 10 seconds and save ouput of cal command in file and also count number of iterations
+//run the bash script
+
+count=0
+millis=$(date +%s)
+endtime=$((millis+10))
+while [ $millis -lt $endtime ]
+do
+	echo "Running"
+	count=$((count+1))
+	cal >> /tmp/a.txt
+	millis=$(date +%s)
+done
+echo "Count: $count" >> /tmp/a.txt
+cat /tmp/a.txt
