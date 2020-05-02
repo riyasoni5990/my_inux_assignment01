@@ -1,0 +1,91 @@
+#Assignment 2
+#Make docker container to run docker commands on host machine inside container
+#run the command
+```
+docker run -it -v /var/run/docker.sock:/var/run/docker.sock ubuntu:latest sh -c "apt-get update ; apt-get install docker.io -y ; bash"
+```
+
+
+
+#Assignment 3
+#Auto launch container from updated webapp image
+#First make Dockerfile of webapp
+```
+FROM nginx
+MAINTAINER riyasoni
+COPY webapp /usr/share/nginx/html/
+EXPOSE 80
+```
+#Build the image
+```
+docker build -t mywebapp .
+```
+#Run the container
+```
+docker run -d --name webapp -p 8080:80 mywebapp
+```
+#Now make a shell script "myscript.sh" for check for update of image
+```
+#!/bin/bash
+while :
+do
+	updated=`docker inspect --format "{{.Id}}" mywebapp`
+	current=`docker inspect --format='{{.Image}}' webapp`
+	if [ "$current" != "$updated" ]
+	then
+		`docker rm -f webapp`
+		`docker run -d --name webapp -p 8080:80 mywebapp`
+	fi
+done
+```
+#Now make Dockerfile for make image of updater
+```
+FROM alpine
+MAINTAINER riyasoni
+RUN apk add docker
+RUN apk add --no-cache --upgrade bash
+COPY myscript.sh /myscript.sh
+RUN chmod +x /myscript.sh
+ENTRYPOINT ["/bin/bash","/myscript.sh"]
+```
+#Build the image
+```
+docker build -t myupdater .
+```
+#Run the container
+```
+docker run -d -v /var/run/docker.sock:/var/run/docker.sock myupdater
+```
+
+
+
+
+#Assignment 4
+#Add new user having sudo permissions
+#Make Dockerfile
+```
+from centos
+maintainer riyasoni
+run yum install httpd -y
+run yum install sudo -y
+copy webapp /var/www/html/
+run useradd riya
+run echo "riya ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/riya && chmod 0440 /etc/sudoers.d/riya
+run echo "ServerName localhost" >> /etc/httpd/conf/httpd.conf
+user riya
+expose 80
+entrypoint sudo httpd -DFOREGROUND
+```
+#Build image
+```
+docker build -t myimage .
+```
+#Run the container
+```
+docker run -d --name testcontainer -p 8080:80 myimage
+```
+#Run exec bash
+```
+docker exec -it testcontainer bash
+```
+#now run any command using sudo
